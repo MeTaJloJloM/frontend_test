@@ -11,6 +11,10 @@ async function start() {
     //Запрос к API на получение списка персонажей
     heroList = await getList(api); 
 
+    if(heroList === undefined || heroList === null){
+        return;
+    }else{
+
     while (heroList.next != null) {
         let temp = await getList(heroList.next);
         heroList.results = heroList.results.concat(temp.results);
@@ -35,6 +39,7 @@ async function start() {
         }
     });
 }
+}
 start();
 
 //Обработчик нажатия на кнопку vehicles для запроса к API на вывод информации о ТС
@@ -43,25 +48,44 @@ divRes.addEventListener('click', (event) => {
         let vehicle = [];
         heroList.results.forEach(async (element) => {
             if (event.target.className === element.name) {
+                let mes;
                 if ((element.vehicles).length > 1) {
                     for (let i = 0; i < (element.vehicles).length; i++) {
-                        vehicle.push(await getList(element.vehicles[i]));
+                        mes = await getList(element.vehicles[i]);
+                        if(mes === undefined || mes === null){
+                            return;
+                        }else{
+                        vehicle.push(mes);
                     }
+                }
                     modalWindow(element.name, vehicle);
                 } else {
-                    vehicle.push(await getList(element.vehicles));
+                    mes = await getList(element.vehicles);
+                    if(mes === undefined || mes === null){
+                        return;
+                    }else{
+                    vehicle.push(mes);
                     modalWindow(element.name, vehicle);
                 }
             }
+            }
         });
+    
     }
 });
 
 //Функция для запроса к API
 async function getList(url) {
-    let res = await fetch(url);
-    return res.json();
-}
+        try 
+        {
+            let res = await fetch(url);
+            let data = await res.json();
+        return data;
+    }
+        catch(e){
+           return alert("Ошибка обращения к серверу, повторите попытку позже");
+        }
+    }
 
 //Функция отрисовки модального окна
 function modalWindow(name, transport) {
